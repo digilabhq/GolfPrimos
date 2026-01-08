@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Golf Primos - Handicap Tracker</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0f5132">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;600;700;800&display=swap');
+
+        :root {
+            --green-primary: #0f5132;
+            --green-dark: #0a3d25;
+            --gold: #d4af37;
+            --gold-light: #ffd700;
+            --red: #dc3545;
+            --bg-dark: #1a1a1a;
+            --bg-card: #2d2d2d;
+            --text-primary: #e8e8e8;
+            --text-secondary: #b0b0b0;
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Header - Mobile Optimized */
+        .header {
+            background: linear-gradient(135deg, var(--green-primary) 0%, var(--green-dark) 100%);
+            padding: 15px;
+            text-align: center;
+            border-bottom: 3px solid var(--gold);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .logo {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.8rem;
+            letter-spacing: 3px;
+            color: var(--gold-light);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .subtitle {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            font-weight: 300;
+            margin-top: 3px;
+        }
+
+        /* Tab Navigation - Mobile Friendly */
+        .tab-nav {
+            display: flex;
+            background: var(--bg-card);
+            border-bottom: 2px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .tab-nav::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tab-button {
+            flex: 1;
+            min-width: 100px;
+            padding: 14px 10px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 3px solid transparent;
+            white-space: nowrap;
+        }
+
+        .tab-button:active {
+            background: rgba(212, 175, 55, 0.1);
+        }
+
+        .tab-button.active {
+            color: var(--gold);
+            border-bottom-color: var(--gold);
+            background: rgba(212, 175, 55, 0.1);
+        }
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .container {
+            max-width: 100%;
+            padding: 12px;
+        }
+
+        /* Leaderboard Table - Mobile Optimized */
+        .chart-container {
+            background: var(--bg-card);
+            border-radius: 10px;
+            padding: 0;
+            border: 1px solid var(--border);
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .chart-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.75rem;
+            min-width: 800px;
+        }
+
+        .chart-table th {
+            background: var(--green-dark);
+            color: var(--gold);
+            padding: 8px 4px;
+            text-align: center;
+            font-weight: 600;
+            border: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            font-size: 0.7rem;
+        }
+
+        .chart-table td {
+            padding: 6px 4px;
+            text-align: center;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+
+        .chart-table td:active {
+            background: rgba(212, 175, 55, 0.1);
+        }
+
+        .chart-table tbody tr:hover {
+            background: rgba(212, 175, 55, 0.05);
+        }
+
+        .chart-table .player-col {
+            text-align: left;
+            font-weight: 600;
+            color: var(--gold);
+            position: sticky;
+            left: 0;
+            background: var(--bg-card);
+            z-index: 5;
+            white-space: nowrap;
+        }
+
+        .chart-table .handicap-col {
+            background: rgba(212, 175, 55, 0.1);
+            font-weight: 700;
+            color: var(--gold);
+        }
+
+        .chart-table .avg-col {
+            background: rgba(37, 99, 235, 0.1);
+            font-weight: 600;
+        }
+
+        /* Share Button */
+        .share-container {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+        }
+
+        .btn-share {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+            padding: 12px 24px;
+            font-size: 0.9rem;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-share:active {
+            transform: scale(0.95);
+        }
+
+        /* Primos Tab - Mobile Optimized */
+        .add-primo-btn-container {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .players-grid {
+            display: grid;
+            gap: 10px;
+        }
+
+        .player-card {
+            background: var(--bg-card);
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+
+        .player-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .player-name {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--gold);
+        }
+
+        .player-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+
+        .player-actions {
+            display: grid;
+            grid-template-columns: 1fr auto auto auto;
+            gap: 6px;
+        }
+
+        /* Buttons - Mobile Optimized */
+        button {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            touch-action: manipulation;
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
+            color: var(--bg-dark);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .icon-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        /* Settings - Mobile Optimized */
+        .settings-section {
+            background: var(--bg-card);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            margin-bottom: 15px;
+        }
+
+        .settings-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--gold);
+            margin-bottom: 12px;
+            font-family: 'Bebas Neue', sans-serif;
+            letter-spacing: 1.5px;
+        }
+
+        .settings-grid {
+            display: grid;
+            gap: 12px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+        }
+
+        /* Modal - Mobile Optimized */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: 12px;
+            max-width: 400px;
+            width: 100%;
+            border: 2px solid var(--gold);
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.7);
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.5rem;
+            color: var(--gold);
+            margin-bottom: 15px;
+            letter-spacing: 1.5px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .modal-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        /* Flounderstown Line */
+        .flounderstown-row {
+            background: rgba(220, 53, 69, 0.15);
+        }
+
+        .flounderstown-row td {
+            text-align: center;
+            padding: 10px;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1rem;
+            color: var(--red);
+            letter-spacing: 2px;
+            border-top: 2px solid var(--red);
+            border-bottom: 2px solid var(--red);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .tab-content.active {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        /* Mobile Specific */
+        @media (max-width: 480px) {
+            .logo {
+                font-size: 1.5rem;
+            }
+
+            .subtitle {
+                font-size: 0.7rem;
+            }
+
+            .tab-button {
+                font-size: 0.75rem;
+                padding: 12px 8px;
+            }
+
+            .chart-table {
+                font-size: 0.7rem;
+            }
+
+            .chart-table th,
+            .chart-table td {
+                padding: 5px 3px;
+            }
+
+            button {
+                font-size: 0.8rem;
+                padding: 8px 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">GOLF PRIMOS</div>
+        <div class="subtitle">Handicap Tracker</div>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="tab-nav">
+        <button class="tab-button active" onclick="switchTab('leaderboard')">🏆 Leaderboard</button>
+        <button class="tab-button" onclick="switchTab('primos')">🏌️ Primos</button>
+        <button class="tab-button" onclick="switchTab('settings')">⚙️ Settings</button>
+    </div>
+
+    <!-- Leaderboard Tab -->
+    <div id="leaderboard" class="tab-content active">
+        <div class="container">
+            <div class="chart-container">
+                <table class="chart-table" id="chartTable"></table>
+            </div>
+            <div class="share-container">
+                <button class="btn-share" onclick="shareScreenshot()">📸 Share Screenshot</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Primos Tab -->
+    <div id="primos" class="tab-content">
+        <div class="container">
+            <div class="add-primo-btn-container">
+                <button class="btn-primary" onclick="addPlayer()">Add New Primo</button>
+            </div>
+            <div id="primosContainer" class="players-grid"></div>
+        </div>
+    </div>
+
+    <!-- Settings Tab -->
+    <div id="settings" class="tab-content">
+        <div class="container">
+            <div class="settings-section">
+                <div class="settings-title">Leaderboard Settings</div>
+                <div class="settings-grid">
+                    <div class="input-group">
+                        <label>Flounderstown Handicap</label>
+                        <input type="number" id="settingsFloundersLine" value="105" min="0" inputmode="numeric">
+                    </div>
+                    <div class="input-group">
+                        <label>Average Cap Handicap</label>
+                        <input type="number" id="settingsAvgCap" value="110" min="0" inputmode="numeric">
+                        <p style="color: var(--text-secondary); font-size: 0.75rem; margin-top: 5px;">
+                            Players with handicap above this will show capped average
+                        </p>
+                    </div>
+                    <button class="btn-primary" onclick="updateSettings()">Save Settings</button>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <div class="settings-title">Data Management</div>
+                <div class="settings-grid">
+                    <button class="btn-secondary" onclick="exportData()">📤 Export Data</button>
+                    <button class="btn-secondary" onclick="importData()">📥 Import Data</button>
+                    <button class="btn-secondary" onclick="clearAllData()">🗑️ Clear All Data</button>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <div class="settings-title">About</div>
+                <p style="color: var(--text-secondary); line-height: 1.6; font-size: 0.85rem;">
+                    Golf Primos Handicap Tracker v2.0
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Player Modal -->
+    <div id="addPlayerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">ADD NEW PRIMO</div>
+            <div class="form-group">
+                <label>Player Name</label>
+                <input type="text" id="newPlayerName" placeholder="Enter player name">
+            </div>
+            <div class="form-group">
+                <label>Initial Handicap</label>
+                <input type="number" id="newPlayerHandicap" placeholder="Enter handicap" value="110" inputmode="numeric">
+            </div>
+            <div class="modal-buttons">
+                <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn-primary" onclick="savePlayer()">Add</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Score Modal -->
+    <div id="addScoreModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">ADD SCORE</div>
+            <div id="scoreInputs"></div>
+            <div class="modal-buttons">
+                <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn-primary" onclick="saveScore()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data structure
+        let appData = {
+            players: [],
+            courses: [],
+            settings: {
+                floundersLine: 105,
+                avgCap: 110
+            }
+        };
+
+        // Load data
+        function loadData() {
+            const saved = localStorage.getItem('golfPrimosData');
+            if (saved) {
+                appData = JSON.parse(saved);
+                // Ensure settings exist with correct defaults
+                if (!appData.settings) {
+                    appData.settings = { floundersLine: 105, avgCap: 110 };
+                }
+                if (!appData.settings.avgCap) {
+                    appData.settings.avgCap = 110;
+                }
+                if (!appData.settings.floundersLine) {
+                    appData.settings.floundersLine = 105;
+                }
+            }
+            document.getElementById('settingsFloundersLine').value = appData.settings.floundersLine;
+            document.getElementById('settingsAvgCap').value = appData.settings.avgCap;
+        }
+
+        // Save data
+        function saveData() {
+            localStorage.setItem('golfPrimosData', JSON.stringify(appData));
+        }
+
+        // Calculate handicap (best 8 of last 10)
+        function calculateHandicap(scoreData) {
+            if (scoreData.length === 0) return 0;
+            const scores = scoreData.map(s => typeof s === 'object' ? s.score : s);
+            const recent = scores.slice(-10);
+            const sorted = [...recent].sort((a, b) => a - b);
+            const best8 = sorted.slice(0, Math.min(8, sorted.length));
+            const avg = best8.reduce((sum, score) => sum + score, 0) / best8.length;
+            return Math.round(avg);
+        }
+
+        // Tab switching
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+
+            if (tabName === 'primos') {
+                renderPrimos();
+            } else if (tabName === 'leaderboard') {
+                renderLeaderboard();
+            }
+        }
+
+        // Render leaderboard
+        function renderLeaderboard() {
+            const table = document.getElementById('chartTable');
+            const floundersLine = appData.settings.floundersLine;
+            const avgCap = appData.settings.avgCap;
+            
+            if (appData.players.length === 0) {
+                table.innerHTML = '<tr><td colspan="13" style="text-align: center; padding: 40px; color: var(--text-secondary);">No players yet. Add golfers to get started!</td></tr>';
+                return;
+            }
+
+            const sorted = [...appData.players].sort((a, b) => a.handicap - b.handicap);
+            const dal = sorted[sorted.length - 1];
+            const topDawg = sorted[0];
+
+            let html = '<thead><tr>';
+            html += '<th class="player-col" style="min-width: 40px;">Rank</th>';
+            html += '<th class="player-col" style="min-width: 100px;">Player</th>';
+            
+            for (let i = 10; i >= 1; i--) {
+                html += `<th>R-${i}</th>`;
+            }
+            
+            html += '<th class="handicap-col">Handicap</th>';
+            html += '<th class="avg-col">Avg</th>';
+            html += '</tr></thead><tbody>';
+
+            sorted.forEach((player, index) => {
+                const isDal = player.id === dal?.id;
+                const isTopDawg = player.id === topDawg?.id && sorted.length > 1;
+                const isFlounder = player.handicap > floundersLine;
+
+                if (isFlounder && index > 0 && sorted[index - 1].handicap <= floundersLine) {
+                    html += `<tr class="flounderstown-row"><td colspan="13">FLOUNDERSTOWN</td></tr>`;
+                }
+
+                html += `<tr>`;
+                html += `<td class="player-col" style="text-align: center; font-weight: 700; color: var(--gold);">#${index + 1}</td>`;
+                
+                let playerName = player.name;
+                if (isTopDawg) playerName += ' 🏆';
+                if (isDal) playerName += ' 🫏';
+                
+                html += `<td class="player-col">${playerName}</td>`;
+                
+                const last10 = player.scores.slice(-10);
+                const paddingNeeded = 10 - last10.length;
+                
+                for (let i = 0; i < paddingNeeded; i++) {
+                    html += `<td>-</td>`;
+                }
+                
+                for (let i = 0; i < last10.length; i++) {
+                    const scoreData = last10[i];
+                    const score = typeof scoreData === 'object' ? scoreData.score : scoreData;
+                    const course = typeof scoreData === 'object' && scoreData.course ? scoreData.course : '?';
+                    html += `<td onclick="showCourse('${course}', ${score})">${score}</td>`;
+                }
+                
+                let handicapDisplay = player.handicap;
+                if (player.handicap > 110) {
+                    const firstDigit = String(player.handicap)[0];
+                    handicapDisplay = `${firstDigit}••`;
+                }
+                html += `<td class="handicap-col">${handicapDisplay}</td>`;
+                
+                const scores = player.scores.map(s => typeof s === 'object' ? s.score : s);
+                const last10Scores = scores.slice(-10);
+                let avgDisplay;
+                if (player.handicap > avgCap) {
+                    avgDisplay = avgCap + '.0';
+                } else {
+                    const avg = last10Scores.length > 0
+                        ? (last10Scores.reduce((sum, s) => sum + s, 0) / last10Scores.length).toFixed(1)
+                        : '-';
+                    avgDisplay = avg;
+                }
+                html += `<td class="avg-col">${avgDisplay}</td>`;
+                
+                html += '</tr>';
+            });
+
+            html += '</tbody>';
+            table.innerHTML = html;
+        }
+
+        // Show course popup
+        function showCourse(course, score) {
+            alert(`Course: ${course}\nScore: ${score}`);
+        }
+
+        // Render primos
+        function renderPrimos() {
+            const container = document.getElementById('primosContainer');
+            
+            if (appData.players.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 40px; font-size: 0.9rem;">No primos yet. Click "Add New Primo" to get started!</p>';
+                return;
+            }
+
+            const sorted = [...appData.players].sort((a, b) => b.handicap - a.handicap);
+
+            let html = '';
+            sorted.forEach((player, index) => {
+                const scores = player.scores.map(s => typeof s === 'object' ? s.score : s);
+                const worstScore = scores.length > 0 ? Math.max(...scores) : '-';
+                const bestScore = scores.length > 0 ? Math.min(...scores) : '-';
+
+                html += `
+                    <div class="player-card">
+                        <div class="player-header">
+                            <div class="player-name">#${index + 1} ${player.name}</div>
+                        </div>
+                        <div class="player-stats">
+                            <div><strong>Handicap:</strong> ${player.handicap}</div>
+                            <div><strong>Rounds:</strong> ${player.scores.length}</div>
+                            <div><strong>Best:</strong> ${bestScore}</div>
+                            <div><strong>Worst:</strong> ${worstScore}</div>
+                        </div>
+                        <div class="player-actions">
+                            <button class="btn-primary" onclick="addScoreForPlayer('${player.id}')">➕ Add Score</button>
+                            <button class="icon-btn" onclick="viewPlayerScores('${player.id}')">📊</button>
+                            <button class="icon-btn" onclick="editPlayer('${player.id}')">✏️</button>
+                            <button class="icon-btn" onclick="deletePlayer('${player.id}')">🗑️</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // Add player
+        function addPlayer() {
+            document.getElementById('newPlayerName').value = '';
+            document.getElementById('newPlayerHandicap').value = '110';
+            document.getElementById('addPlayerModal').classList.add('active');
+        }
+
+        // Save player
+        function savePlayer() {
+            const name = document.getElementById('newPlayerName').value.trim();
+            const handicap = parseInt(document.getElementById('newPlayerHandicap').value) || 110;
+
+            if (!name) {
+                alert('Please enter a player name');
+                return;
+            }
+
+            appData.players.push({
+                id: Date.now() + Math.random(),
+                name: name,
+                handicap: handicap,
+                scores: []
+            });
+
+            saveData();
+            renderPrimos();
+            renderLeaderboard();
+            closeModal();
+        }
+
+        // Add score for player
+        function addScoreForPlayer(playerId) {
+            const player = appData.players.find(p => p.id == playerId);
+            if (!player) return;
+
+            document.getElementById('scoreInputs').innerHTML = `
+                <div class="form-group">
+                    <label>Player</label>
+                    <input type="text" value="${player.name}" disabled style="opacity: 0.6;">
+                </div>
+                <div class="form-group">
+                    <label>Score</label>
+                    <input type="number" id="singleScore" placeholder="Enter score" min="0" inputmode="numeric" autofocus>
+                </div>
+                <div class="form-group">
+                    <label>Course Name (Optional)</label>
+                    <input type="text" id="singleCourseName" list="courseList" placeholder="Enter course">
+                    <datalist id="courseList">
+                        ${appData.courses.map(c => `<option value="${c}">`).join('')}
+                    </datalist>
+                </div>
+            `;
+            
+            document.getElementById('addScoreModal').classList.add('active');
+            document.getElementById('addScoreModal').dataset.playerId = playerId;
+        }
+
+        // Save score
+        function saveScore() {
+            const modal = document.getElementById('addScoreModal');
+            const playerId = modal.dataset.playerId;
+            const player = appData.players.find(p => p.id == playerId);
+            
+            if (!player) {
+                alert('Player not found');
+                return;
+            }
+
+            const scoreInput = document.getElementById('singleScore');
+            const courseName = document.getElementById('singleCourseName').value.trim() || null;
+
+            if (!scoreInput || !scoreInput.value) {
+                alert('Please enter a score');
+                return;
+            }
+
+            const score = parseInt(scoreInput.value);
+            
+            player.scores.push({
+                score: score,
+                course: courseName
+            });
+            
+            player.handicap = calculateHandicap(player.scores);
+
+            if (courseName && !appData.courses.includes(courseName)) {
+                appData.courses.push(courseName);
+            }
+
+            saveData();
+            renderPrimos();
+            renderLeaderboard();
+            closeModal();
+        }
+
+        // View player scores
+        function viewPlayerScores(playerId) {
+            const player = appData.players.find(p => p.id == playerId);
+            if (!player) return;
+
+            const last10 = player.scores.slice(-10);
+            const scoresHtml = last10.length > 0 
+                ? last10.map((scoreData, i) => {
+                    const score = typeof scoreData === 'object' ? scoreData.score : scoreData;
+                    const course = typeof scoreData === 'object' && scoreData.course ? scoreData.course : '?';
+                    return `R${player.scores.length - last10.length + i + 1}: ${score} (${course})`;
+                }).join('\n')
+                : 'No scores yet';
+
+            alert(`${player.name}\n\nLast 10 Scores:\n${scoresHtml}\n\nHandicap: ${player.handicap}`);
+        }
+
+        // Edit player
+        function editPlayer(id) {
+            const player = appData.players.find(p => p.id === id);
+            if (!player) return;
+
+            const newName = prompt('Enter new name:', player.name);
+            if (newName && newName.trim()) {
+                player.name = newName.trim();
+                saveData();
+                renderPrimos();
+                renderLeaderboard();
+            }
+        }
+
+        // Delete player
+        function deletePlayer(id) {
+            if (confirm('Remove this player?')) {
+                appData.players = appData.players.filter(p => p.id !== id);
+                saveData();
+                renderPrimos();
+                renderLeaderboard();
+            }
+        }
+
+        // Update settings
+        function updateSettings() {
+            appData.settings.floundersLine = parseInt(document.getElementById('settingsFloundersLine').value);
+            appData.settings.avgCap = parseInt(document.getElementById('settingsAvgCap').value);
+            saveData();
+            renderLeaderboard();
+            alert('Settings saved successfully!');
+        }
+
+        // Export data
+        function exportData() {
+            const dataStr = JSON.stringify(appData, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `golf-primos-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Import data
+        function importData() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'application/json';
+            input.onchange = e => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = event => {
+                    try {
+                        appData = JSON.parse(event.target.result);
+                        if (!appData.settings) {
+                            appData.settings = { floundersLine: 105, avgCap: 110 };
+                        }
+                        if (!appData.settings.avgCap) {
+                            appData.settings.avgCap = 110;
+                        }
+                        if (!appData.settings.floundersLine) {
+                            appData.settings.floundersLine = 105;
+                        }
+                        saveData();
+                        loadData();
+                        renderPrimos();
+                        renderLeaderboard();
+                        alert('Data imported successfully!');
+                    } catch (err) {
+                        alert('Error importing data');
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
+        // Clear all data
+        function clearAllData() {
+            if (confirm('Clear ALL data? This cannot be undone!')) {
+                localStorage.removeItem('golfPrimosData');
+                location.reload();
+            }
+        }
+
+        // Close modal
+        function closeModal() {
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.classList.remove('active');
+            });
+        }
+
+        // Share screenshot
+        async function shareScreenshot() {
+            // Load html2canvas library dynamically
+            if (!window.html2canvas) {
+                const script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+                document.head.appendChild(script);
+                
+                await new Promise((resolve) => {
+                    script.onload = resolve;
+                });
+            }
+
+            // Capture the leaderboard
+            try {
+                const container = document.querySelector('#leaderboard .container');
+                const shareButton = document.querySelector('.share-container');
+                
+                // Temporarily hide share button
+                if (shareButton) shareButton.style.display = 'none';
+                
+                const canvas = await html2canvas(container, {
+                    backgroundColor: '#1a1a1a',
+                    scale: 2,
+                    logging: false
+                });
+                
+                // Show share button again
+                if (shareButton) shareButton.style.display = 'block';
+                
+                // Convert to blob
+                canvas.toBlob(async (blob) => {
+                    const file = new File([blob], 'golf-primos-leaderboard.png', { type: 'image/png' });
+                    
+                    // Try to share using Web Share API
+                    if (navigator.share && navigator.canShare({ files: [file] })) {
+                        try {
+                            await navigator.share({
+                                files: [file],
+                                title: 'Golf Primos Leaderboard',
+                                text: 'Check out our Golf Primos leaderboard!'
+                            });
+                        } catch (err) {
+                            if (err.name !== 'AbortError') {
+                                downloadImage(canvas);
+                            }
+                        }
+                    } else {
+                        // Fallback to download
+                        downloadImage(canvas);
+                    }
+                });
+            } catch (err) {
+                console.error('Screenshot error:', err);
+                alert('Unable to capture screenshot. Please try taking a manual screenshot.');
+            }
+        }
+
+        // Download image fallback
+        function downloadImage(canvas) {
+            const link = document.createElement('a');
+            link.download = `golf-primos-${Date.now()}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+
+        // Close modals on outside click
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeModal();
+                }
+            });
+        });
+
+        // Initialize
+        loadData();
+        renderLeaderboard();
+    </script>
+</body>
+</html>
