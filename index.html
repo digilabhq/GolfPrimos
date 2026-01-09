@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
   <title>Golf Primos - Handicap Tracker</title>
 
   <link rel="manifest" href="manifest.json">
@@ -946,7 +946,9 @@
     });
 
     // --- Screenshot sharing (unchanged behavior) ---
+    
     async function shareScreenshot(){
+      // Lazy-load html2canvas if needed
       if (!window.html2canvas){
         const script = document.createElement('script');
         script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
@@ -954,68 +956,102 @@
         await new Promise(resolve => { script.onload = resolve; });
       }
 
+      const shareButton = document.querySelector('.share-container');
+      const chartContainer = document.querySelector('#leaderboard .chart-container');
+      const chartTable = document.getElementById('chartTable');
+
+      if (!chartContainer || !chartTable){
+        alert('Nothing to share yet.');
+        return;
+      }
+
+      const prevBtnDisplay = shareButton ? shareButton.style.display : '';
+      const prevOverflowX = chartContainer.style.overflowX;
+      const prevOverflowY = chartContainer.style.overflowY;
+      const prevScrollLeft = chartContainer.scrollLeft;
+      const prevScrollTop = chartContainer.scrollTop;
+
       try{
-        const container = document.querySelector('#leaderboard .container');
-        const shareButton = document.querySelector('.share-container');
+        // Hide button so it won't appear in the capture
         if (shareButton) shareButton.style.display = 'none';
 
-        const isPortrait = window.innerHeight > window.innerWidth;
-        if (isPortrait){
-          container.style.transform = 'rotate(90deg)';
-          container.style.transformOrigin = 'center center';
-        }
+        // Ensure the table is fully "at rest" for consistent rendering
+        chartContainer.scrollLeft = 0;
+        chartContainer.scrollTop = 0;
 
-        const targetWidth = 1920, targetHeight = 1080;
-        const scale = Math.min(targetWidth / container.offsetWidth, targetHeight / container.offsetHeight);
+        // Prevent any scrollbars from affecting capture
+        chartContainer.style.overflowX = 'hidden';
+        chartContainer.style.overflowY = 'hidden';
 
-        const canvas = await html2canvas(container, {
+        // Capture the full table (including off-screen columns) using scroll dimensions
+        const captureWidth = Math.max(chartTable.scrollWidth, chartTable.offsetWidth);
+        const captureHeight = Math.max(chartTable.scrollHeight, chartTable.offsetHeight);
+
+        const renderScale = Math.min(2, window.devicePixelRatio || 2);
+
+        const captureCanvas = await html2canvas(chartTable, {
           backgroundColor: getComputedStyle(document.body).backgroundColor,
-          scale,
-          logging:false,
-          width: container.offsetWidth,
-          height: container.offsetHeight,
-          windowWidth: targetWidth,
-          windowHeight: targetHeight
+          scale: renderScale,
+          logging: false,
+          width: captureWidth,
+          height: captureHeight,
+          windowWidth: captureWidth,
+          windowHeight: captureHeight,
+          scrollX: 0,
+          scrollY: 0
         });
 
-        if (isPortrait) container.style.transform = '';
-        if (shareButton) shareButton.style.display = 'block';
+        // Output a clean share image (landscape) and fit the capture inside it
+        const targetW = 1920;
+        const targetH = 1080;
 
         const finalCanvas = document.createElement('canvas');
-        if (isPortrait){
-          finalCanvas.width = canvas.height;
-          finalCanvas.height = canvas.width;
-          const ctx = finalCanvas.getContext('2d');
-          ctx.translate(finalCanvas.width/2, finalCanvas.height/2);
-          ctx.rotate(90 * Math.PI/180);
-          ctx.drawImage(canvas, -canvas.width/2, -canvas.height/2);
-        } else {
-          finalCanvas.width = canvas.width;
-          finalCanvas.height = canvas.height;
-          finalCanvas.getContext('2d').drawImage(canvas, 0, 0);
-        }
+        finalCanvas.width = targetW;
+        finalCanvas.height = targetH;
+
+        const ctx = finalCanvas.getContext('2d');
+        // Fill background
+        ctx.fillStyle = getComputedStyle(document.body).backgroundColor;
+        ctx.fillRect(0, 0, targetW, targetH);
+
+        const fitScale = Math.min(targetW / captureCanvas.width, targetH / captureCanvas.height);
+        const drawW = Math.round(captureCanvas.width * fitScale);
+        const drawH = Math.round(captureCanvas.height * fitScale);
+        const dx = Math.round((targetW - drawW) / 2);
+        const dy = Math.round((targetH - drawH) / 2);
+
+        ctx.drawImage(captureCanvas, dx, dy, drawW, drawH);
 
         finalCanvas.toBlob(async (blob) => {
           const file = new File([blob], 'golf-primos-leaderboard.png', { type: 'image/png' });
+
           if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })){
             try{
-              await navigator.share({ files:[file], title:'Golf Primos Leaderboard', text:'Check out our Golf Primos leaderboard!' });
-            } catch(err){
+              await navigator.share({
+                files: [file],
+                title: 'Golf Primos Leaderboard',
+                text: 'Check out our Golf Primos leaderboard!'
+              });
+            } catch (err){
               if (err.name !== 'AbortError') downloadImage(finalCanvas);
             }
           } else {
             downloadImage(finalCanvas);
           }
         });
-      } catch(err){
+      } catch (err){
         console.error('Screenshot error:', err);
-        alert('Unable to capture screenshot. Please try taking a manual screenshot.');
-        const container = document.querySelector('#leaderboard .container');
-        if (container) container.style.transform = '';
-        const shareButton = document.querySelector('.share-container');
-        if (shareButton) shareButton.style.display = 'block';
+        alert('Unable to capture screenshot. Please try again.');
+      } finally {
+        // Restore UI state
+        chartContainer.style.overflowX = prevOverflowX;
+        chartContainer.style.overflowY = prevOverflowY;
+        chartContainer.scrollLeft = prevScrollLeft;
+        chartContainer.scrollTop = prevScrollTop;
+        if (shareButton) shareButton.style.display = prevBtnDisplay;
       }
     }
+
 
     function downloadImage(canvas){
       const link = document.createElement('a');
