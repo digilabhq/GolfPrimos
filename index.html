@@ -8,7 +8,7 @@
     <meta name="theme-color" content="#0f5132">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="description" content="Golf Primos Handicap Tracker - Track golf scores, handicaps, and rankings for your crew">
+    <meta name="description" content="Golf Primos Handicap Tracker - Track golf scores, handicaps, and rankings for the Primos">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;600;700;800&display=swap');
 
@@ -1234,7 +1234,8 @@
                         
                         newWorker.addEventListener('statechange', () => {
                             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                showUpdateNotification(newWorker);
+                                // Silent update - just tell the new worker to take over
+                                newWorker.postMessage({ action: 'skipWaiting' });
                             }
                         });
                     });
@@ -1242,58 +1243,6 @@
                     console.log('[PWA] Service Worker registration failed:', error);
                 }
             });
-
-            function showUpdateNotification(worker) {
-                const updateBanner = document.createElement('div');
-                updateBanner.style.cssText = `
-                    position: fixed;
-                    top: 60px;
-                    left: 50%;
-                    transform: translateX(-50%);
-                    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
-                    color: var(--bg-dark);
-                    padding: 15px 25px;
-                    border-radius: 10px;
-                    box-shadow: 0 4px 20px rgba(212, 175, 55, 0.5);
-                    z-index: 10000;
-                    font-weight: 600;
-                    text-align: center;
-                    max-width: 90%;
-                    animation: slideDown 0.3s ease-out;
-                `;
-                
-                updateBanner.innerHTML = `
-                    <div style="margin-bottom: 10px;">🎉 New version available!</div>
-                    <button onclick="this.parentElement.updateApp()" style="
-                        background: var(--bg-dark);
-                        color: var(--gold);
-                        border: none;
-                        padding: 8px 20px;
-                        border-radius: 6px;
-                        font-weight: 700;
-                        cursor: pointer;
-                        font-size: 0.85rem;
-                    ">Update Now</button>
-                    <button onclick="this.parentElement.remove()" style="
-                        background: transparent;
-                        color: var(--bg-dark);
-                        border: 1px solid var(--bg-dark);
-                        padding: 8px 20px;
-                        border-radius: 6px;
-                        font-weight: 600;
-                        cursor: pointer;
-                        margin-left: 10px;
-                        font-size: 0.85rem;
-                    ">Later</button>
-                `;
-                
-                updateBanner.updateApp = () => {
-                    worker.postMessage({ action: 'skipWaiting' });
-                    updateBanner.innerHTML = '<div>Updating... Please wait</div>';
-                };
-                
-                document.body.appendChild(updateBanner);
-            }
         }
 
         loadData();

@@ -1,4 +1,4 @@
-// Golf Primos Service Worker v1.0.1
+// Golf Primos Service Worker v1.0.1 - Silent Auto-Update
 const CACHE_NAME = 'golf-primos-v1.0.1';
 const ASSETS_TO_CACHE = [
   './',
@@ -8,7 +8,7 @@ const ASSETS_TO_CACHE = [
   'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'
 ];
 
-// Install event - cache assets
+// Install event - cache assets and skip waiting
 self.addEventListener('install', (event) => {
   console.log('[Service Worker] Installing v1.0.1');
   event.waitUntil(
@@ -17,10 +17,7 @@ self.addEventListener('install', (event) => {
         console.log('[Service Worker] Caching assets');
         return cache.addAll(ASSETS_TO_CACHE);
       })
-      .then(() => {
-        console.log('[Service Worker] Skip waiting');
-        return self.skipWaiting();
-      })
+      .then(() => self.skipWaiting())
   );
 });
 
@@ -37,26 +34,21 @@ self.addEventListener('activate', (event) => {
           }
         })
       );
-    }).then(() => {
-      console.log('[Service Worker] Claiming clients');
-      return self.clients.claim();
-    })
+    }).then(() => self.clients.claim())
   );
 });
 
-// Fetch event - NETWORK FIRST, fallback to cache
+// Fetch event - network first, fallback to cache
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        // Network success - cache the new version
-        if (response && response.status === 200) {
-          const responseToCache = response.clone();
-          
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache);
-          });
-        }
+        // Clone response before caching
+        const responseToCache = response.clone();
+        
+        caches.open(CACHE_NAME).then((cache) => {
+          cache.put(event.request, responseToCache);
+        });
         
         return response;
       })
@@ -67,7 +59,7 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
-// Message event - handle update requests
+// Message event - handle skip waiting
 self.addEventListener('message', (event) => {
   if (event.data && event.data.action === 'skipWaiting') {
     self.skipWaiting();
