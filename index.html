@@ -592,6 +592,16 @@
                             Players with average above this will show obfuscated average
                         </p>
                     </div>
+                    <div class="input-group">
+                        <label>Handicap Rule</label>
+                        <select id="handicapRuleSelect">
+                            <option value="best8">Best 8 of last 10 rounds</option>
+                            <option value="avg10">Average of last 10 rounds</option>
+                        </select>
+                        <p style="color: var(--text-secondary); font-size: 0.75rem; margin-top: 5px;">
+                            Choose how handicap is calculated (applies to all players)
+                        </p>
+                    </div>
                     <button class="btn-primary" onclick="saveSettings()">Save Settings</button>
                 </div>
             </div>
@@ -652,7 +662,8 @@
             courses: [],
             settings: {
                 floundersLine: 105,
-                avgCap: 110
+                avgCap: 110,
+                handicapRule: 'best8'
             }
         };
 
@@ -661,7 +672,7 @@
             if (saved) {
                 appData = JSON.parse(saved);
                 if (!appData.settings) {
-                    appData.settings = { floundersLine: 105, avgCap: 110 };
+                    appData.settings = { floundersLine: 105, avgCap: 110, handicapRule: 'best8' };
                 }
                 if (!appData.settings.avgCap) {
                     appData.settings.avgCap = 110;
@@ -669,9 +680,14 @@
                 if (!appData.settings.floundersLine) {
                     appData.settings.floundersLine = 105;
                 }
+                if (!appData.settings.handicapRule) {
+                    appData.settings.handicapRule = 'best8';
+                }
             }
             document.getElementById('floundersLineInput').value = appData.settings.floundersLine;
             document.getElementById('avgCapInput').value = appData.settings.avgCap;
+            const ruleSelect = document.getElementById('handicapRuleSelect');
+            if (ruleSelect) ruleSelect.value = appData.settings.handicapRule || 'best8';
         }
 
         function saveData() {
@@ -679,9 +695,20 @@
         }
 
         function calculateHandicap(scoreData) {
-            if (scoreData.length === 0) return 0;
+            if (!scoreData || scoreData.length === 0) return 0;
+
             const scores = scoreData.map(s => typeof s === 'object' ? s.score : s);
             const recent = scores.slice(-10);
+            const rule = (appData.settings && appData.settings.handicapRule) ? appData.settings.handicapRule : 'best8';
+
+            if (recent.length === 0) return 0;
+
+            if (rule === 'avg10') {
+                const avg10 = recent.reduce((sum, score) => sum + score, 0) / recent.length;
+                return Math.round(avg10);
+            }
+
+            // Default: Best 8 of the last 10 (or fewer if less than 10 rounds)
             const sorted = [...recent].sort((a, b) => a - b);
             const best8 = sorted.slice(0, Math.min(8, sorted.length));
             const avg = best8.reduce((sum, score) => sum + score, 0) / best8.length;
@@ -1043,8 +1070,17 @@
         function saveSettings() {
             appData.settings.floundersLine = parseInt(document.getElementById('floundersLineInput').value);
             appData.settings.avgCap = parseInt(document.getElementById('avgCapInput').value);
+            const ruleSelect = document.getElementById('handicapRuleSelect');
+            appData.settings.handicapRule = ruleSelect ? ruleSelect.value : (appData.settings.handicapRule || 'best8');
+
+            // Recalculate handicaps for all players based on the selected rule
+            appData.players.forEach(player => {
+                player.handicap = calculateHandicap(player.scores);
+            });
+
             saveData();
             renderLeaderboard();
+            renderPrimos();
             alert('Settings saved successfully!');
         }
 
@@ -1070,7 +1106,7 @@
                     try {
                         appData = JSON.parse(event.target.result);
                         if (!appData.settings) {
-                            appData.settings = { floundersLine: 105, avgCap: 110 };
+                            appData.settings = { floundersLine: 105, avgCap: 110, handicapRule: 'best8' };
                         }
                         if (!appData.settings.avgCap) {
                             appData.settings.avgCap = 110;
