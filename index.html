@@ -18,8 +18,8 @@
             --gold: #d4af37;
             --gold-light: #ffd700;
             --red: #dc3545;
-            --bg-dark: #1a1a1a;
-            --bg-card: #2d2d2d;
+            --bg-dark: #222222;
+            --bg-card: #333333;
             --text-primary: #e8e8e8;
             --text-secondary: #b0b0b0;
             --border: rgba(255, 255, 255, 0.1);
@@ -199,11 +199,11 @@
 
         .flounderstown-row td {
             text-align: center;
-            padding: 10px;
+            padding: 4px;
             font-family: 'Bebas Neue', sans-serif;
-            font-size: 1rem;
+            font-size: 0.75rem;
             color: var(--red);
-            letter-spacing: 2px;
+            letter-spacing: 1px;
             border-top: 2px solid var(--red);
             border-bottom: 2px solid var(--red);
             cursor: default;
@@ -579,14 +579,14 @@
 
         /* Smaller FLOUNDERSTOWN ribbon */
         .flounderstown-row td {
-            padding: 6px;
-            font-size: 0.80rem;
+            padding: 4px;
+            font-size: 0.75rem;
             letter-spacing: 1px;
-            border-top: 1px solid var(--red);
-            border-bottom: 1px solid var(--red);
+            border-top: 2px solid var(--red);
+            border-bottom: 2px solid var(--red);
         }
 
-        @media (max-width: 480px), (orientation: portrait) {
+@media (max-width: 480px), (orientation: portrait) {
             .chart-table {
                 font-size: 0.56rem;
             }
@@ -602,12 +602,39 @@
                 max-width: 80px;
             }
             .flounderstown-row td {
-                padding: 5px;
-                font-size: 0.72rem;
+                padding: 3px;
+                font-size: 0.68rem;
                 letter-spacing: 0.8px;
+                border-top: 2px solid var(--red);
+                border-bottom: 2px solid var(--red);
             }
         }
 
+    
+/* Leaderboard column sizing tweaks */
+.chart-table th.player-col,
+.chart-table th.handicap-col,
+.chart-table th.avg-col {
+    background: var(--green-dark) !important;
+}
+
+/* Golfer column: fit ~14 chars, ellipsis if longer */
+.chart-table th.player-col.golfer-header { min-width: 62px; max-width: 92px; }
+.chart-table td.player-col.golfer-cell {
+    max-width: 92px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* HCP column a bit tighter */
+.chart-table th.handicap-col { min-width: 38px; max-width: 44px; }
+.chart-table td.handicap-col { width: 44px; }
+
+/* Round columns a bit wider */
+.chart-table th:not(.player-col):not(.handicap-col):not(.avg-col),
+.chart-table td:not(.player-col):not(.handicap-col):not(.avg-col) {
+    min-width: 34px;
+}
     </style>
 </head>
 <body>
@@ -817,13 +844,13 @@
 
             let html = '<thead><tr>';
             html += '<th class="player-col" style="min-width: 50px; max-width: 60px;">Rank</th>';
-            html += '<th class="player-col" style="min-width: 70px; max-width: 100px;">Golfer</th>';
+            html += '<th class="player-col golfer-header">Golfer</th>';
             
             for (let i = 10; i >= 1; i--) {
                 html += `<th>R-${i}</th>`;
             }
             
-            html += '<th class="handicap-col" style="min-width: 40px; max-width: 50px;">HCP</th>';
+            html += '<th class="handicap-col">HCP</th>';
             html += '<th class="avg-col">Avg</th>';
             html += '</tr></thead><tbody>';
 
@@ -833,7 +860,7 @@
                 const isFlounder = player.handicap > floundersLine;
 
                 if (isFlounder && index > 0 && sorted[index - 1].handicap <= floundersLine) {
-                    html += `<tr class="flounderstown-row"><td colspan="13">FLOUNDERSTOWN</td></tr>`;
+                    html += `<tr class="flounderstown-row"><td colspan="13">FLOUNDERSVILLE</td></tr>`;
                 }
 
                 html += `<tr>`;
@@ -847,7 +874,7 @@
                     rankDisplay = `#${index + 1}`;
                 }
                 html += `<td class="player-col" style="text-align: center; font-weight: 700; color: var(--gold);">${rankDisplay}</td>`;
-                html += `<td class="player-col">${player.name}</td>`;
+                html += `<td class="player-col golfer-cell">${player.name}</td>`;
                 
                 const last10 = player.scores.slice(-10);
                 const paddingNeeded = 10 - last10.length;
