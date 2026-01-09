@@ -539,6 +539,75 @@
                 padding: 10px;
             }
         }
+
+        /* --- Fit-to-screen tweaks (portrait + landscape) --- */
+        #leaderboard .container {
+            min-height: calc(100dvh - 140px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        #leaderboard .chart-container {
+            flex: 1 1 auto;
+        }
+
+        #leaderboard .share-container {
+            margin-top: auto;
+            padding-bottom: max(15px, env(safe-area-inset-bottom));
+        }
+
+        /* Make leaderboard table scale more aggressively to fit both orientations */
+        .chart-table {
+            font-size: clamp(0.50rem, 1.20vw, 0.65rem);
+        }
+
+        .chart-table th {
+            font-size: clamp(0.45rem, 1.05vw, 0.60rem);
+            padding: clamp(3px, 0.75vw, 6px) 2px;
+        }
+
+        .chart-table td {
+            font-size: clamp(0.50rem, 1.20vw, 0.65rem);
+            padding: clamp(3px, 0.75vw, 5px) 2px;
+        }
+
+        .chart-table .player-col {
+            font-size: clamp(0.45rem, 1.00vw, 0.60rem);
+            padding: clamp(3px, 0.75vw, 5px) 4px;
+            max-width: 90px;
+        }
+
+        /* Smaller FLOUNDERSTOWN ribbon */
+        .flounderstown-row td {
+            padding: 6px;
+            font-size: 0.80rem;
+            letter-spacing: 1px;
+            border-top: 1px solid var(--red);
+            border-bottom: 1px solid var(--red);
+        }
+
+        @media (max-width: 480px), (orientation: portrait) {
+            .chart-table {
+                font-size: 0.56rem;
+            }
+            .chart-table th {
+                font-size: 0.52rem;
+                padding: 3px 2px;
+            }
+            .chart-table td {
+                padding: 3px 2px;
+            }
+            .chart-table .player-col {
+                font-size: 0.54rem;
+                max-width: 80px;
+            }
+            .flounderstown-row td {
+                padding: 5px;
+                font-size: 0.72rem;
+                letter-spacing: 0.8px;
+            }
+        }
+
     </style>
 </head>
 <body>

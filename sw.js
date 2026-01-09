@@ -1,67 +1,105 @@
-// Golf Primos Service Worker v1.0.1 - Silent Auto-Update
-const CACHE_NAME = 'golf-primos-v1.0.1';
-const ASSETS_TO_CACHE = [
+// Golf Primos Service Worker v1.0.2 - iOS/PWA-friendly update behavior
+//
+// Changes vs v1.0.1 (sw.js):
+// - Precache ONLY same-origin core files (avoid install failures from cross-origin/CDN requests).
+// - Navigation (HTML) uses Network-First so updated app shell is fetched when online.
+// - Only cache GET requests.
+// - Runtime-cache other requests with Stale-While-Revalidate.
+// - Accept both message formats: {action:'skipWaiting'} and {type:'SKIP_WAITING'}.
+
+const SW_VERSION = '1.0.2';
+const CACHE_PREFIX = 'golf-primos-';
+const CACHE_NAME = `${CACHE_PREFIX}v${SW_VERSION}`;
+
+// Keep this list strictly same-origin.
+// (If your repo has an /icons/ folder, you can add those files here too.)
+const CORE_ASSETS = [
   './',
   './index.html',
-  './manifest.json',
-  'https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;600;700;800&display=swap',
-  'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'
+  './manifest.json'
 ];
 
-// Install event - cache assets and skip waiting
 self.addEventListener('install', (event) => {
-  console.log('[Service Worker] Installing v1.0.1');
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('[Service Worker] Caching assets');
-        return cache.addAll(ASSETS_TO_CACHE);
-      })
-      .then(() => self.skipWaiting())
+    (async () => {
+      const cache = await caches.open(CACHE_NAME);
+      // If any CORE_ASSETS item fails, installation can fail. Keep this list tight.
+      await cache.addAll(CORE_ASSETS);
+      await self.skipWaiting();
+    })()
   );
 });
 
-// Activate event - clean up old caches
 self.addEventListener('activate', (event) => {
-  console.log('[Service Worker] Activating v1.0.1');
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            console.log('[Service Worker] Deleting old cache:', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
+    (async () => {
+      const keys = await caches.keys();
+      await Promise.all(
+        keys
+          .filter((k) => k.startsWith(CACHE_PREFIX) && k !== CACHE_NAME)
+          .map((k) => caches.delete(k))
       );
-    }).then(() => self.clients.claim())
+      await self.clients.claim();
+    })()
   );
 });
 
-// Fetch event - network first, fallback to cache
+// Helpers
+const isNavigationRequest = (request) => request.mode === 'navigate';
+
+async function networkFirst(request) {
+  const cache = await caches.open(CACHE_NAME);
+  try {
+    const response = await fetch(request);
+    // Only cache successful basic/opaque responses for GET.
+    if (response && (response.type === 'basic' || response.type === 'opaque') && response.status !== 206) {
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch (err) {
+    // For navigations, fall back to the cached app shell.
+    const cached = await caches.match(request);
+    return cached || caches.match('./index.html');
+  }
+}
+
+async function staleWhileRevalidate(request) {
+  const cache = await caches.open(CACHE_NAME);
+  const cached = await cache.match(request);
+
+  const fetchPromise = fetch(request)
+    .then((response) => {
+      if (response && (response.type === 'basic' || response.type === 'opaque')) {
+        cache.put(request, response.clone());
+      }
+      return response;
+    })
+    .catch(() => null);
+
+  return cached || (await fetchPromise) || cached;
+}
+
 self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    fetch(event.request)
-      .then((response) => {
-        // Clone response before caching
-        const responseToCache = response.clone();
-        
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, responseToCache);
-        });
-        
-        return response;
-      })
-      .catch(() => {
-        // Network failed - try cache
-        return caches.match(event.request);
-      })
-  );
+  const { request } = event;
+
+  // Only handle GET; avoid breaking POST/PUT/etc.
+  if (request.method !== 'GET') return;
+
+  // Always try to refresh the app shell when the user opens the PWA.
+  if (isNavigationRequest(request)) {
+    event.respondWith(networkFirst(request));
+    return;
+  }
+
+  // For other assets, serve cached immediately and update in background.
+  event.respondWith(staleWhileRevalidate(request));
 });
 
-// Message event - handle skip waiting
 self.addEventListener('message', (event) => {
-  if (event.data && event.data.action === 'skipWaiting') {
+  const data = event.data;
+  if (!data) return;
+
+  if (data.action === 'skipWaiting' || data.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
 });
