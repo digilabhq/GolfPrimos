@@ -3,18 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Golf Primos - Handicap Tracker </title>
+    <title>Golf Primos - Handicap Tracker</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0f5132">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="description" content="Golf Primos Handicap Tracker - Track golf scores, handicaps, and rankings for Primos">
+    <meta name="description" content="Golf Primos Handicap Tracker - Track golf scores, handicaps, and rankings for your crew">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;600;700;800&display=swap');
 
-        /* ============================================
-           CSS VARIABLES
-           ============================================ */
         :root {
             --green-primary: #0f5132;
             --green-dark: #0a3d25;
@@ -28,9 +25,6 @@
             --border: rgba(255, 255, 255, 0.1);
         }
 
-        /* ============================================
-           GLOBAL RESET
-           ============================================ */
         * {
             margin: 0;
             padding: 0;
@@ -47,9 +41,6 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* ============================================
-           HEADER
-           ============================================ */
         .header {
             background: linear-gradient(135deg, var(--green-primary) 0%, var(--green-dark) 100%);
             padding: 15px;
@@ -75,9 +66,6 @@
             margin-top: 3px;
         }
 
-        /* ============================================
-           TAB NAVIGATION
-           ============================================ */
         .tab-nav {
             display: flex;
             background: var(--bg-card);
@@ -121,9 +109,6 @@
             background: rgba(212, 175, 55, 0.1);
         }
 
-        /* ============================================
-           TAB CONTENT
-           ============================================ */
         .tab-content {
             display: none;
             animation: fadeIn 0.3s ease-out;
@@ -138,9 +123,6 @@
             padding: 12px;
         }
 
-        /* ============================================
-           LEADERBOARD TABLE
-           ============================================ */
         .chart-container {
             background: var(--bg-card);
             border-radius: 10px;
@@ -227,9 +209,6 @@
             cursor: default;
         }
 
-        /* ============================================
-           SHARE BUTTON
-           ============================================ */
         .share-container {
             text-align: center;
             margin-top: 20px;
@@ -255,9 +234,6 @@
             transform: scale(0.95);
         }
 
-        /* ============================================
-           PRIMOS TAB
-           ============================================ */
         .add-primo-container {
             text-align: center;
             margin-bottom: 15px;
@@ -308,9 +284,6 @@
             gap: 6px;
         }
 
-        /* ============================================
-           BUTTONS
-           ============================================ */
         button {
             padding: 10px 16px;
             border: none;
@@ -361,9 +334,6 @@
             background: rgba(255, 255, 255, 0.1);
         }
 
-        /* ============================================
-           SETTINGS
-           ============================================ */
         .settings-section {
             background: var(--bg-card);
             padding: 15px;
@@ -417,9 +387,6 @@
             box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
         }
 
-        /* ============================================
-           MODAL
-           ============================================ */
         .modal {
             display: none;
             position: fixed;
@@ -472,9 +439,6 @@
             margin-top: 20px;
         }
 
-        /* ============================================
-           ANIMATIONS
-           ============================================ */
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
@@ -491,9 +455,17 @@
             }
         }
 
-        /* ============================================
-           RESPONSIVE - MOBILE PORTRAIT
-           ============================================ */
+        @keyframes slideDown {
+            from {
+                transform: translateX(-50%) translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+
         @media (max-width: 480px) {
             .logo {
                 font-size: 1.3rem;
@@ -528,9 +500,6 @@
             }
         }
 
-        /* ============================================
-           RESPONSIVE - LANDSCAPE
-           ============================================ */
         @media (orientation: landscape) and (max-height: 600px) {
             .chart-table {
                 font-size: 0.55rem;
@@ -573,26 +542,17 @@
     </style>
 </head>
 <body>
-    <!-- ============================================
-         HEADER
-         ============================================ -->
     <div class="header">
         <div class="logo">GOLF PRIMOS</div>
         <div class="subtitle">Handicap Tracker</div>
     </div>
 
-    <!-- ============================================
-         TAB NAVIGATION
-         ============================================ -->
     <div class="tab-nav">
         <button class="tab-button active" onclick="switchTab('leaderboard')">🏆 Leaderboard</button>
         <button class="tab-button" onclick="switchTab('primos')">🏌️ Primos</button>
         <button class="tab-button" onclick="switchTab('settings')">⚙️ Settings</button>
     </div>
 
-    <!-- ============================================
-         LEADERBOARD TAB
-         ============================================ -->
     <div id="leaderboard" class="tab-content active">
         <div class="container">
             <div class="chart-container">
@@ -604,9 +564,6 @@
         </div>
     </div>
 
-    <!-- ============================================
-         PRIMOS TAB
-         ============================================ -->
     <div id="primos" class="tab-content">
         <div class="container">
             <div class="add-primo-container">
@@ -616,9 +573,6 @@
         </div>
     </div>
 
-    <!-- ============================================
-         SETTINGS TAB
-         ============================================ -->
     <div id="settings" class="tab-content">
         <div class="container">
             <div class="settings-section">
@@ -657,15 +611,12 @@
                     <strong style="color: var(--gold);">Golf Primos Handicap Tracker</strong><br>
                     Version 1.0.0<br>
                     <br>
-                    A progressive web app for tracking golf handicaps and scores for your Primos.
+                    A progressive web app for tracking golf handicaps and scores for your crew.
                 </p>
             </div>
         </div>
     </div>
 
-    <!-- ============================================
-         ADD PLAYER MODAL
-         ============================================ -->
     <div id="addPlayerModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">ADD NEW PRIMO</div>
@@ -684,9 +635,6 @@
         </div>
     </div>
 
-    <!-- ============================================
-         SCORE MODAL (ADD/EDIT)
-         ============================================ -->
     <div id="scoreModal" class="modal">
         <div class="modal-content">
             <div class="modal-header" id="scoreModalHeader">ADD SCORE</div>
@@ -699,9 +647,6 @@
     </div>
 
     <script>
-        // ============================================
-        // DATA STRUCTURE
-        // ============================================
         let appData = {
             players: [],
             courses: [],
@@ -711,9 +656,6 @@
             }
         };
 
-        // ============================================
-        // DATA PERSISTENCE
-        // ============================================
         function loadData() {
             const saved = localStorage.getItem('golfPrimosData');
             if (saved) {
@@ -736,9 +678,6 @@
             localStorage.setItem('golfPrimosData', JSON.stringify(appData));
         }
 
-        // ============================================
-        // HANDICAP CALCULATION
-        // ============================================
         function calculateHandicap(scoreData) {
             if (scoreData.length === 0) return 0;
             const scores = scoreData.map(s => typeof s === 'object' ? s.score : s);
@@ -749,9 +688,6 @@
             return Math.round(avg);
         }
 
-        // ============================================
-        // TAB SWITCHING
-        // ============================================
         function switchTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
@@ -769,9 +705,6 @@
             }
         }
 
-        // ============================================
-        // RENDER LEADERBOARD
-        // ============================================
         function renderLeaderboard() {
             const table = document.getElementById('chartTable');
             const floundersLine = appData.settings.floundersLine;
@@ -862,9 +795,6 @@
             table.innerHTML = html;
         }
 
-        // ============================================
-        // RENDER PRIMOS
-        // ============================================
         function renderPrimos() {
             const container = document.getElementById('primosContainer');
             
@@ -914,9 +844,6 @@
             container.innerHTML = html;
         }
 
-        // ============================================
-        // PLAYER MANAGEMENT
-        // ============================================
         function openAddPlayerModal() {
             document.getElementById('newPlayerName').value = '';
             document.getElementById('newPlayerHandicap').value = '110';
@@ -983,9 +910,6 @@
             alert(`${player.name}\n\nLast 10 Scores:\n${scoresHtml}\n\nHandicap: ${player.handicap}`);
         }
 
-        // ============================================
-        // SCORE MANAGEMENT
-        // ============================================
         function openAddScoreModal(playerId) {
             const player = appData.players.find(p => p.id == playerId);
             if (!player) return;
@@ -1116,9 +1040,6 @@
             closeModal();
         }
 
-        // ============================================
-        // SETTINGS
-        // ============================================
         function saveSettings() {
             appData.settings.floundersLine = parseInt(document.getElementById('floundersLineInput').value);
             appData.settings.avgCap = parseInt(document.getElementById('avgCapInput').value);
@@ -1127,9 +1048,6 @@
             alert('Settings saved successfully!');
         }
 
-        // ============================================
-        // DATA MANAGEMENT
-        // ============================================
         function exportData() {
             const dataStr = JSON.stringify(appData, null, 2);
             const blob = new Blob([dataStr], { type: 'application/json' });
@@ -1181,9 +1099,6 @@
             }
         }
 
-        // ============================================
-        // SHARE SCREENSHOT
-        // ============================================
         async function shareScreenshot() {
             if (!window.html2canvas) {
                 const script = document.createElement('script');
@@ -1282,9 +1197,6 @@
             link.click();
         }
 
-        // ============================================
-        // MODAL MANAGEMENT
-        // ============================================
         function closeModal() {
             document.querySelectorAll('.modal').forEach(modal => {
                 modal.classList.remove('active');
@@ -1299,37 +1211,29 @@
             });
         });
 
-        // ============================================
-        // SERVICE WORKER REGISTRATION & UPDATE LOGIC
-        // ============================================
         if ('serviceWorker' in navigator) {
             let refreshing = false;
 
-            // Detect controller change and reload page
             navigator.serviceWorker.addEventListener('controllerchange', () => {
                 if (refreshing) return;
                 refreshing = true;
                 window.location.reload();
             });
 
-            // Register service worker
             window.addEventListener('load', async () => {
                 try {
                     const registration = await navigator.serviceWorker.register('./sw.js');
                     console.log('[PWA] Service Worker registered:', registration.scope);
 
-                    // Check for updates every 60 seconds
                     setInterval(() => {
                         registration.update();
                     }, 60000);
 
-                    // Listen for updates
                     registration.addEventListener('updatefound', () => {
                         const newWorker = registration.installing;
                         
                         newWorker.addEventListener('statechange', () => {
                             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                // New service worker available
                                 showUpdateNotification(newWorker);
                             }
                         });
@@ -1339,7 +1243,6 @@
                 }
             });
 
-            // Show update notification
             function showUpdateNotification(worker) {
                 const updateBanner = document.createElement('div');
                 updateBanner.style.cssText = `
@@ -1390,28 +1293,9 @@
                 };
                 
                 document.body.appendChild(updateBanner);
-
-                // Add animation
-                const style = document.createElement('style');
-                style.textContent = `
-                    @keyframes slideDown {
-                        from {
-                            transform: translateX(-50%) translateY(-100%);
-                            opacity: 0;
-                        }
-                        to {
-                            transform: translateX(-50%) translateY(0);
-                            opacity: 1;
-                        }
-                    }
-                `;
-                document.head.appendChild(style);
             }
         }
 
-        // ============================================
-        // INITIALIZE APP
-        // ============================================
         loadData();
         renderLeaderboard();
     </script>
