@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.125, user-scalable=yes, viewport-fit=cover">
   <title>Golf Primos - Handicap Tracker</title>
 
   <link rel="manifest" href="manifest.json">
@@ -16,7 +16,9 @@
 
     :root{
       --safe-top: env(safe-area-inset-top, 0px);
+      --safe-right: env(safe-area-inset-right, 0px);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --safe-left: env(safe-area-inset-left, 0px);
       --green-primary:#0f5132;
       --green-dark:#0a3d25;
       --gold:#d4af37;
@@ -46,7 +48,9 @@
       color:var(--text-primary);
       min-height:100vh;
       padding-top: var(--safe-top);
+      padding-right: var(--safe-right);
       padding-bottom: var(--safe-bottom);
+      padding-left: var(--safe-left);
       overflow-x:hidden;
       -webkit-font-smoothing:antialiased;
     }
