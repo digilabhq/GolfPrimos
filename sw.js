@@ -1,5 +1,5 @@
-// Golf Primos Service Worker v1.0.0
-const CACHE_NAME = 'golf-primos-v1.0.0';
+// Golf Primos Service Worker v1.0.1
+const CACHE_NAME = 'golf-primos-v1.0.1';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -10,7 +10,7 @@ const ASSETS_TO_CACHE = [
 
 // Install event - cache assets
 self.addEventListener('install', (event) => {
-  console.log('[Service Worker] Installing v1.0.0');
+  console.log('[Service Worker] Installing v1.0.1');
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
@@ -26,7 +26,7 @@ self.addEventListener('install', (event) => {
 
 // Activate event - clean up old caches
 self.addEventListener('activate', (event) => {
-  console.log('[Service Worker] Activating v1.0.0');
+  console.log('[Service Worker] Activating v1.0.1');
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
@@ -44,42 +44,32 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch event - serve from cache, fallback to network
+// Fetch event - NETWORK FIRST, fallback to cache
 self.addEventListener('fetch', (event) => {
   event.respondWith(
-    caches.match(event.request)
+    fetch(event.request)
       .then((response) => {
-        // Cache hit - return response
-        if (response) {
-          return response;
-        }
-        
-        // Clone the request
-        const fetchRequest = event.request.clone();
-        
-        return fetch(fetchRequest).then((response) => {
-          // Check if valid response
-          if (!response || response.status !== 200 || response.type !== 'basic') {
-            return response;
-          }
-          
-          // Clone the response
+        // Network success - cache the new version
+        if (response && response.status === 200) {
           const responseToCache = response.clone();
           
-          caches.open(CACHE_NAME)
-            .then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
-          
-          return response;
-        });
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
+        }
+        
+        return response;
+      })
+      .catch(() => {
+        // Network failed - try cache
+        return caches.match(event.request);
       })
   );
 });
 
 // Message event - handle update requests
 self.addEventListener('message', (event) => {
-  if (event.data.action === 'skipWaiting') {
+  if (event.data && event.data.action === 'skipWaiting') {
     self.skipWaiting();
   }
 });
