@@ -182,6 +182,79 @@
             font-size: 0.6rem;
         }
 
+        /* Sticky Rank + Golfer columns (kept visible when scrolling left/right) */
+        .chart-table .rank-col,
+        .chart-table .golfer-col {
+            background: var(--bg-card);
+        }
+
+        .chart-table .rank-col {
+            text-align: center;
+            font-weight: 700;
+            color: var(--gold);
+            width: 64px;
+            max-width: 64px;
+            min-width: 64px;
+            white-space: nowrap;
+        }
+
+        .chart-table .golfer-col {
+            font-weight: 600;
+            color: var(--gold);
+            width: 14ch;
+            max-width: 14ch;
+            min-width: 14ch;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Wider round columns */
+        .chart-table .round-col {
+            min-width: 42px;
+        }
+
+        /* Ensure all header cells share the same green background */
+        .chart-table th.rank-col,
+        .chart-table th.golfer-col,
+        .chart-table th.round-col,
+        .chart-table th.handicap-col,
+        .chart-table th.avg-col {
+            background: var(--green-dark) !important;
+            color: var(--gold) !important;
+        }
+
+        /* Apply sticky only when horizontal scrolling is used (portrait) */
+        @media (orientation: portrait) {
+            .chart-table td.rank-col,
+            .chart-table th.rank-col {
+                position: sticky;
+                left: 0;
+                z-index: 7;
+            }
+
+            .chart-table td.golfer-col,
+            .chart-table th.golfer-col {
+                position: sticky;
+                left: 64px;
+                z-index: 6;
+            }
+        }
+
+        /* Landscape: slightly bigger font, and prevent left/right scroll */
+        @media (orientation: landscape) {
+            .chart-container { overflow-x: hidden; }
+            .chart-table { table-layout: fixed; }
+
+            .chart-table { font-size: 0.72rem; }
+            .chart-table th { font-size: 0.66rem; }
+            .chart-table td { font-size: 0.72rem; }
+
+            .chart-table .rank-col { width: 66px; min-width: 66px; max-width: 66px; }
+            .chart-table .golfer-col { width: 14ch; min-width: 14ch; max-width: 14ch; }
+            .chart-table .round-col { min-width: 44px; }
+        }
+
         .chart-table .handicap-col {
             background: rgba(212, 175, 55, 0.1);
             font-weight: 700;
@@ -843,11 +916,11 @@
             const topDawg = sorted[0];
 
             let html = '<thead><tr>';
-            html += '<th class="player-col" style="min-width: 50px; max-width: 60px;">Rank</th>';
+            html += '<th class="rank-col">Rank</th>';
             html += '<th class="player-col golfer-header">Golfer</th>';
             
             for (let i = 10; i >= 1; i--) {
-                html += `<th>R-${i}</th>`;
+                html += `<th class="round-col">R-${i}</th>`;
             }
             
             html += '<th class="handicap-col">HCP</th>';
@@ -873,21 +946,21 @@
                 } else {
                     rankDisplay = `#${index + 1}`;
                 }
-                html += `<td class="player-col" style="text-align: center; font-weight: 700; color: var(--gold);">${rankDisplay}</td>`;
+                html += `<td class="rank-col">${rankDisplay}</td>`;
                 html += `<td class="player-col golfer-cell">${player.name}</td>`;
                 
                 const last10 = player.scores.slice(-10);
                 const paddingNeeded = 10 - last10.length;
                 
                 for (let i = 0; i < paddingNeeded; i++) {
-                    html += `<td>-</td>`;
+                    html += `<td class="round-col">-</td>`;
                 }
                 
                 for (let i = 0; i < last10.length; i++) {
                     const scoreData = last10[i];
                     const score = typeof scoreData === 'object' ? scoreData.score : scoreData;
                     const scoreIndex = player.scores.length - last10.length + i;
-                    html += `<td onclick="openEditScoreModal('${player.id}', ${scoreIndex})" title="Click to edit">${score}</td>`;
+                    html += `<td class="round-col" onclick="openEditScoreModal('${player.id}', ${scoreIndex})" title="Click to edit">${score}</td>`;
                 }
                 
                 let handicapDisplay = player.handicap;
