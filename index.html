@@ -15,6 +15,8 @@
     @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;600;700;800&display=swap');
 
     :root{
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
       --green-primary:#0f5132;
       --green-dark:#0a3d25;
       --gold:#d4af37;
@@ -43,6 +45,8 @@
       background:var(--bg-dark);
       color:var(--text-primary);
       min-height:100vh;
+      padding-top: var(--safe-top);
+      padding-bottom: var(--safe-bottom);
       overflow-x:hidden;
       -webkit-font-smoothing:antialiased;
     }
@@ -74,7 +78,7 @@
       display:flex;
       background:var(--bg-card);
       border-bottom:2px solid var(--border);
-      position:sticky; top:0; z-index:100;
+      position:sticky; top: var(--safe-top); z-index:100;
       overflow-x:auto;
       -webkit-overflow-scrolling:touch;
     }
